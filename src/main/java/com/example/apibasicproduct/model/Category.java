@@ -22,7 +22,7 @@ public class Category {
 
     private String description;
 
-    private boolean isPublished;
+    private Boolean isPublished;
 
     private Long imageId;
 
@@ -37,4 +37,5 @@ public class Category {
     @OneToMany(mappedBy = "category")
     @JsonIgnore
     private List<ProductCategory> productCategories = new ArrayList<>();
+
 }
