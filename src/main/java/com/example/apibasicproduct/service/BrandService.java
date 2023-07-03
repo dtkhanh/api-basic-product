@@ -1,5 +1,7 @@
 package com.example.apibasicproduct.service;
 
+import com.example.apibasicproduct.exception.DuplicatedException;
+import com.example.apibasicproduct.exception.NotFoundException;
 import com.example.apibasicproduct.model.Brand;
 import com.example.apibasicproduct.repository.BrandRepository;
 import com.example.apibasicproduct.viewmodel.brand.BrandListVm;
@@ -22,7 +24,7 @@ public class BrandService {
     public BrandService(BrandRepository brandRepository) {
         this.brandRepository = brandRepository;
     }
-    public Brand createBrand(BrandPostVm brandPostVm) throws Exception {
+    public Brand createBrand(BrandPostVm brandPostVm) {
         validateExistedNameAndId(brandPostVm.name(), null);
         return brandRepository.save(brandPostVm.toModel());
     }
@@ -44,9 +46,17 @@ public class BrandService {
                 brandPage.isLast()
         );
     }
-    private void validateExistedNameAndId(String name, Long id) throws Exception {
+    public void update(BrandPostVm brandPostVm, Long id){
+        validateExistedNameAndId(brandPostVm.name(), id);
+        Brand brand = brandRepository.findById(id)
+                .orElseThrow(()-> new NotFoundException("Brand not found: ", id));
+        brand.setPublished(brandPostVm.isPublished());
+        brand.setName(brandPostVm.name());
+        brandRepository.save(brand);
+    }
+    private void validateExistedNameAndId(String name, Long id) {
         if(checkExitedNameAndId(name,id)){
-            throw new Exception("Name brand is existed:" + name);
+            throw new DuplicatedException("Name brand is existed: " , name);
         }
     }
     private boolean checkExitedNameAndId(String name, Long id){
