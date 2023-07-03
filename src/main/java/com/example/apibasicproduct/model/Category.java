@@ -14,7 +14,6 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class Category {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -38,7 +37,4 @@ public class Category {
     @OneToMany(mappedBy = "category")
     @JsonIgnore
     private List<ProductCategory> productCategories = new ArrayList<>();
-
-
-
 }
