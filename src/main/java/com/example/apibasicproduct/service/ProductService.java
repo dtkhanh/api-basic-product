@@ -9,14 +9,17 @@ import com.example.apibasicproduct.model.Product;
 import com.example.apibasicproduct.model.ProductCategory;
 import com.example.apibasicproduct.repository.BrandRepository;
 import com.example.apibasicproduct.repository.CategoryRepository;
-import com.example.apibasicproduct.repository.ProductCategoryRepository;
 import com.example.apibasicproduct.repository.ProductRepository;
 import com.example.apibasicproduct.viewmodel.brand.BrandVm;
 import com.example.apibasicproduct.viewmodel.category.CategoryVm;
 import com.example.apibasicproduct.viewmodel.product.ProductDetailVm;
+import com.example.apibasicproduct.viewmodel.product.ProductListVm;
 import com.example.apibasicproduct.viewmodel.product.ProductPostVm;
 import com.example.apibasicproduct.viewmodel.product.ProductVm;
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -27,13 +30,11 @@ import java.util.Optional;
 @Transactional
 public class ProductService {
     private final ProductRepository productRepository;
-    private final ProductCategoryRepository productCategoryRepository;
     private final BrandRepository brandRepository;
     private final CategoryRepository categoryRepository;
 
-    public ProductService(ProductRepository productRepository, ProductCategoryRepository productCategoryRepository, BrandRepository brandRepository, CategoryRepository categoryRepository) {
+    public ProductService(ProductRepository productRepository,BrandRepository brandRepository, CategoryRepository categoryRepository) {
         this.productRepository = productRepository;
-        this.productCategoryRepository = productCategoryRepository;
         this.brandRepository = brandRepository;
         this.categoryRepository = categoryRepository;
     }
@@ -42,6 +43,26 @@ public class ProductService {
         return productRepository.findAll()
                 .stream().map(ProductVm::fromModel).toList();
     }
+
+    public ProductListVm getProductsPageable(int pageNo, int pageSize){
+        List<ProductVm> productVms = new ArrayList<>();
+        Pageable pageable = PageRequest.of(pageNo,pageSize);
+        Page<Product> productPage = productRepository.findAll(pageable);
+        List<Product> productList = productPage.getContent();
+        for( Product product: productList){
+            productVms.add(ProductVm.fromModel(product));
+        }
+        return new ProductListVm(
+                productVms,
+                productPage.getNumber(),
+                productPage.getSize(),
+                (int) productPage.getTotalElements(),
+                productPage.getTotalPages(),
+                productPage.isLast()
+        );
+    }
+
+
 
     public ProductDetailVm getProductById(Long id){
         Product product = productRepository.findById(id)
@@ -110,6 +131,24 @@ public class ProductService {
             }
         }
         return productCategories;
+    }
+
+    public ProductListVm getListProductWithName(int pageNo, int pageSize, String productName, String brandName){
+        List<ProductVm> productVms = new ArrayList<>();
+        Pageable pageable = PageRequest.of(pageNo,pageSize);
+        Page<Product> productPage = productRepository.getProductsWithName(productName.trim().toLowerCase(),brandName.trim(),pageable);
+        List<Product> productList = productPage.getContent();
+        for( Product product: productList){
+            productVms.add(ProductVm.fromModel(product));
+        }
+        return new ProductListVm(
+                productVms,
+                productPage.getNumber(),
+                productPage.getSize(),
+                (int) productPage.getTotalElements(),
+                productPage.getTotalPages(),
+                productPage.isLast()
+        );
     }
 
     private void validateExistedNameAndId(String name, Long id) {
