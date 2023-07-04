@@ -41,7 +41,7 @@ public class BrandService {
                 brandVmList,
                 brandPage.getNumber(),
                 brandPage.getSize(),
-                brandPage.getTotalPages(),
+                (int) brandPage.getTotalElements(),
                 brandPage.getTotalPages(),
                 brandPage.isLast()
         );

@@ -61,4 +61,14 @@ public class CategoryController {
         return ResponseEntity.created(uriComponentsBuilder.replacePath("/api/categories/{id}").buildAndExpand(category.getId()).toUri())
                 .body(CategoryVm.fromModel(category));
     }
+
+    @PutMapping("/api/categories/{id}")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "No content", content = @Content()),
+            @ApiResponse(responseCode = "404", description = "Not found", content = @Content(schema = @Schema(implementation = ErrorVm.class))),
+            @ApiResponse(responseCode = "400", description = "Bad request", content = @Content(schema = @Schema(implementation = ErrorVm.class)))})
+    public ResponseEntity<Void> updateCategories(@Valid @RequestBody CategoryPostVm categoryPostVm , @PathVariable("id") Long id){
+        categoryService.updateCategory(categoryPostVm,id);
+        return ResponseEntity.noContent().build();
+    }
 }

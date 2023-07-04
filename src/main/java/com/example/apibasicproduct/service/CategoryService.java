@@ -37,7 +37,7 @@ public class CategoryService {
                 categoryVms,
                 categoryPage.getNumber(),
                 categoryPage.getSize(),
-                categoryPage.getTotalPages(),
+                (int) categoryPage.getTotalElements(),
                 categoryPage.getTotalPages(),
                 categoryPage.isLast()
         );
@@ -47,6 +47,7 @@ public class CategoryService {
                 .orElseThrow(()-> new NotFoundException("Not found category: ", id));
         return CategoryVm.fromModel(category);
     }
+
     public Category createCategory(CategoryPostVm categoryPostVm){
         validateExistedNameAndId(categoryPostVm.name(), null);
         Category category = new Category();
@@ -61,6 +62,21 @@ public class CategoryService {
         }
         return categoryRepository.save(category);
     }
+    public void updateCategory(CategoryPostVm categoryPostVm, Long id){
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(()-> new NotFoundException("Not found category: ", id));
+        category.setName(categoryPostVm.name());
+        category.setDescription(categoryPostVm.description());
+        category.setIsPublished(categoryPostVm.isPublished());
+        category.setImageId(null);
+        Category parentCategory = categoryRepository.findById(categoryPostVm.parentId())
+                .orElseThrow(()->new BadRequestException("Parent category not found: "));
+        if(parentCategory.getId().equals(id) || parentCategory.getParent().getId().equals(id)){
+            throw new BadRequestException("Parent category can not be it self");
+        }
+        category.setParent(parentCategory);
+        categoryRepository.save(category);
+    }
 
     private void validateExistedNameAndId(String name, Long id) {
         if(checkExitedNameAndId(name,id)){
@@ -70,4 +86,5 @@ public class CategoryService {
     private boolean checkExitedNameAndId(String name, Long id){
         return categoryRepository.findExistedNameAndId(name,id) != null;
     }
+
 }
