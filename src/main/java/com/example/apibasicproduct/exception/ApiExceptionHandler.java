@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 
@@ -24,8 +25,10 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.badRequest().body(errorVm);
     }
     @ExceptionHandler(BadRequestException.class)
-    protected ResponseEntity<Object> handleBadRequest(BadRequestException e) {
-        ErrorVm errorVm = new ErrorVm(HttpStatus.BAD_REQUEST.toString(), HttpStatus.BAD_REQUEST.getReasonPhrase(), e.getMessage());
+    public ResponseEntity<ErrorVm> handleBadRequestException(BadRequestException ex, WebRequest request) {
+        String message = ex.getMessage();
+        ErrorVm errorVm = new ErrorVm(HttpStatus.BAD_REQUEST.toString(), HttpStatus.BAD_REQUEST.getReasonPhrase(), message);
         return ResponseEntity.badRequest().body(errorVm);
     }
+
 }
